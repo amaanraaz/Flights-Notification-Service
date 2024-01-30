@@ -2,10 +2,12 @@ const express = require('express');
 
 const { ServerConfig } = require('./config');
 const apiRoutes = require('./routes');
-const amqplib = require('amqplib')
+const amqplib = require('amqplib');
 
 const app = express();
 // const mailSender = require('./config/email-config')
+
+const {EmailService} = require('./services')
 
 //rabbit mq implementation
 async function connectQueue(){
@@ -13,8 +15,10 @@ async function connectQueue(){
         const connection = await amqplib.connect("amqp://localhost");
         const channel = await connection.createChannel();
         await channel.assertQueue("notification-queue");
-        channel.consume("notification-queue",(data)=>{
+        channel.consume("notification-queue",async(data)=>{
             console.log(`${Buffer.from(data.content)}`);
+            const bookingDetailsReceived = JSON.parse(`${Buffer.from(data.content)}`)
+            await EmailService.sendEmail("amanraj.7982@gmail.com",bookingDetailsReceived.recepientEmail,bookingDetailsReceived.subject,bookingDetailsReceived.text);
             channel.ack(data)
         });
     } catch (error) {
