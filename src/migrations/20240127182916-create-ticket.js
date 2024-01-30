@@ -26,6 +26,7 @@ module.exports = {
       status: {
         type: Sequelize.ENUM,
         values: [PENDING,SUCCESS,FAILED],
+        defaultValue: PENDING,
         allowNull: false
       },
       createdAt: {
